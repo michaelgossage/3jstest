@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <title>Three.js Gallery Teleport with Voiceover</title>
   <style>
-    html, body { margin: 0; overflow: hidden; height: 100%; }
+    html, body { margin: 0; overflow: hidden; height: 100%; font-family: "Helvetica", Arial, sans-serif; }
     #exitBtn {
       position: absolute;
       top: 10px;
@@ -27,12 +27,14 @@
       background: rgba(0,0,0,0.6);
       color: #fff;
       padding: 10px 20px;
-      border-radius: 10px;
+      //border-radius: 10px;
       font-size: 18px;
       text-align: center;
-      max-width: 80%;
+      max-width: 90%;
+      width:70%;
       z-index: 15;
       display: none;
+      font-size:36px;
     }
     #audioControls {
       position: absolute;
@@ -41,7 +43,7 @@
       transform: translateX(-50%);
       background: rgba(0,0,0,0.7);
       padding: 10px;
-      border-radius: 10px;
+      //border-radius: 10px;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -51,13 +53,27 @@
     #seekBar {
       width: 100%;
     }
+    #startBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px 40px;
+      font-size: 24px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      border: none;
+      //border-radius: 10px;
+      cursor: pointer;
+      z-index: 100;
+    }
     button {
       background: #444;
       color: white;
       border: none;
       padding: 6px 12px;
       cursor: pointer;
-      border-radius: 5px;
+      //border-radius: 5px;
     }
     button:hover {
       background: #666;
@@ -65,17 +81,20 @@
   </style>
 </head>
 <body>
+  <button id="startBtn">▶ Start Experience</button>
   <button id="exitBtn">Exit</button>
   <div id="subtitleBox"></div>
 
   <!-- Custom audio controls -->
   <div id="audioControls">
     <button id="playPauseBtn">▶ Play</button>
-    <button id="muteBtn">🔇 Mute</button>
+    <button id="muteBtn">Mute</button>
     <input type="range" id="seekBar" value="0" min="0" max="100" step="0.1">
   </div>
 
   <audio id="voiceover" preload="auto"></audio>
+  
+  
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -96,11 +115,55 @@
 
     // 👉 Subtitles format: { start, end, text }
     const subtitles = [
-      { start: 0, end: 4, text: "Welcome to the gallery." },
-      { start: 4, end: 8, text: "Explore the glass structures around you." },
-      { start: 8, end: 12, text: "Click on a podium to zoom in closer." },
-      { start: 12, end: 20, text: "Press exit to return to the main view." }
-    ];
+  { start: 0.179, end: 2.099, text: "The School of Media and Communication at" },
+  { start: 2.119, end: 4.359, text: "the London College of Fashion is a vibrant" },
+  { start: 4.38, end: 7.099, text: "and dedicated community. We believe in" },
+  { start: 7.119, end: 8.999, text: "shaping the future of fashion media," },
+  { start: 9.26, end: 11.56, text: "communication, and design for performance." },
+  { start: 12.159, end: 14.18, text: "The three programs span a wide range of" },
+  { start: 14.239, end: 17.139, text: "disciplines from fashion film photography," },
+  { start: 17.5, end: 19.62, text: "creative direction, fashion media and" },
+  { start: 19.699, end: 22.22, text: "criticism, fashion curation, costume" },
+  { start: 22.279, end: 25.439, text: "design, hair and makeup, and prosthetics" },
+  { start: 25.459, end: 27.339, text: "for performance amongst many others." },
+  { start: 28.219, end: 30.38, text: "But it is this interrelationship and the" },
+  { start: 30.439, end: 32.04, text: "potentials at the edges of those" },
+  { start: 32.099, end: 34.559, text: "disciplines that really enable us to move" },
+  { start: 34.639, end: 37.54, text: "forward and to change our industries. As a" },
+  { start: 37.599, end: 39.54, text: "school, we champion the values of" },
+  { start: 39.599, end: 41.74, text: "collaboration, openness, and" },
+  { start: 41.819, end: 44.379, text: "communication. This enables us to build" },
+  { start: 44.399, end: 46.279, text: "opportunities between communities and" },
+  { start: 46.299, end: 47.02, text: "disciplines." },
+  { start: 47.739, end: 50.279, text: "We cultivate rich networks and connections" },
+  { start: 50.299, end: 52.679, text: "with industry practitioners to pioneer" },
+  { start: 52.759, end: 55.299, text: "new ways of collaborating based on shared" },
+  { start: 55.34, end: 57.9, text: "values of co-curation and knowledge" },
+  { start: 57.959, end: 58.58, text: "exchange." },
+  { start: 59.479, end: 61.579, text: "Our students gain access to our research" },
+  { start: 61.639, end: 63.639, text: "centers which include the Digital" },
+  { start: 63.719, end: 66.04, text: "Anthropology Lab, the Center for Fashion" },
+  { start: 66.119, end: 68.819, text: "Curation, and a whole range of hubs and" },
+  { start: 68.879, end: 70.999, text: "networks that really do enrich their" },
+  { start: 71.059, end: 72.359, text: "learning and experience." },
+  { start: 73.059, end: 75.459, text: "Core to our approach is an understanding" },
+  { start: 75.5, end: 77.939, text: "that the body is a creative site, and this" },
+  { start: 78.0, end: 79.659, text: "connects all of our disciplines." },
+  { start: 80.279, end: 82.239, text: "We also share values of engagement," },
+  { start: 82.58, end: 85.459, text: "innovation, and activism which continue to" },
+  { start: 85.479, end: 87.939, text: "enable us to move forward and to think in" },
+  { start: 88.0, end: 88.659, text: "new ways." },
+  { start: 89.439, end: 91.239, text: "Our students and staff work across" },
+  { start: 91.299, end: 93.519, text: "disciplines and platforms, and we seek to" },
+  { start: 93.54, end: 96.199, text: "create meaningful experiences and generate" },
+  { start: 96.22, end: 98.399, text: "creative solutions to critical issues of" },
+  { start: 98.4, end: 98.999, text: "our time." },
+  { start: 100.099, end: 102.18, text: "Fashion for us is much more than just" },
+  { start: 102.239, end: 104.519, text: "clothes or images. It's actually about" },
+  { start: 104.54, end: 106.779, text: "experiences, and it has the capability to" },
+  { start: 106.839, end: 108.46, text: "change lives. Thank you." }
+]
+;
 
     // Play/Pause toggle
     playPauseBtn.addEventListener("click", () => {
@@ -116,7 +179,7 @@
     // Mute toggle
     muteBtn.addEventListener("click", () => {
       audioElement.muted = !audioElement.muted;
-      muteBtn.textContent = audioElement.muted ? "🔊 Unmute" : "🔇 Mute";
+      muteBtn.textContent = audioElement.muted ? "🔊" : "Mute";
     });
 
     // Update seek bar as audio plays
@@ -145,6 +208,30 @@
       subtitleBox.style.display = "none";
       seekBar.value = 0;
     });
+    
+    const startBtn = document.getElementById("startBtn");
+
+// ✅ Disable auto-rotate until user clicks
+//controls.autoRotate = false;
+//controls.update();
+
+// ✅ Hide audio controls until started
+document.getElementById("audioControls").style.display = "none";
+
+startBtn.addEventListener("click", () => {
+  // Start spinning
+  //controls.autoRotate = true;
+
+  // Start audio (must be triggered by user gesture)
+  audioElement.play();
+  playPauseBtn.textContent = "⏸ Pause";
+
+  // Show audio controls
+  document.getElementById("audioControls").style.display = "flex";
+
+  // Hide start button
+  startBtn.style.display = "none";
+});
 
     /* -------------------------------
        🎨 YOUR EXISTING THREE.JS CODE
@@ -189,9 +276,9 @@ const emissiveMaterial = new THREE.ShaderMaterial({
     
  const uniforms = {
   uTime: { value: 0 },
-  uSpeed: { value: 4.0 },
+  uSpeed: { value: 2.0 },
   uFrequency: { value: 80.0 },
-  uDistortion: { value: .0 }
+  uDistortion: { value: -0.005 }
 };
 
 // Material
@@ -213,7 +300,7 @@ const materialLine = new THREE.ShaderMaterial({
 
     void main() {
       // Animate UVs along X axis
-      float x = vUv.y * uFrequency + uTime * uSpeed + cos(vUv.x*00.0*uTime);
+      float x = vUv.y * uFrequency + uTime * uSpeed + cos(vUv.x*0.0*uTime);
 
       // Distort Y with a sine wave for wavy streaks
       float y = vUv.x + sin(vUv.y * 5.0 + uTime) * uDistortion;
@@ -238,6 +325,57 @@ const materialLine = new THREE.ShaderMaterial({
   blending: THREE.AdditiveBlending,
   depthWrite: false
 });
+     const uniformsOuter = {
+  uTime: { value: 0 },
+  uSpeed: { value: 2.0 },
+  uFrequency: { value: 1000.0 },
+  uDistortion: { value: .002 }
+};
+
+const materialLineOuter = new THREE.ShaderMaterial({
+  uniforms: uniformsOuter, // <-- pass uniforms here
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform float uTime;
+    uniform float uSpeed;
+    uniform float uFrequency;
+    uniform float uDistortion;
+    varying vec2 vUv;
+
+    void main() {
+      // Animate UVs along X axis
+      float x = vUv.y * uFrequency + uTime * uSpeed + cos(vUv.x*0.0*uTime);
+
+      // Distort Y with a sine wave for wavy streaks
+      float y = vUv.x + sin(vUv.y * 5.0 + uTime) * uDistortion;
+
+      // Grid lines by taking fractional part
+      float lineX = abs(sin(x * 0.31415 * 4.0));
+      float lineY = abs(sin(y * 314.15 * 8.0));
+
+      // Combine X streaks and faint Y lines
+      float streaks = smoothstep(0.5, 1.0, lineX);
+      float grid    = smoothstep(0.1, 0.1, lineY);
+
+      // Mix streaks and faint grid
+      vec3 color = mix(vec3(0.0), vec3(1.0), streaks);
+      color -= grid * 0.99;
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `,
+  side: THREE.DoubleSide,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+});
+
 init();
 animate();
 //THREE.RectAreaLightUniformsLib.init();
@@ -267,7 +405,7 @@ function init() {
   
   // ✅ Enable auto-rotate
   controls.autoRotate = true;         // turn on auto-rotation
-  controls.autoRotateSpeed = 1.0;     // adjust rotation speed (positive = clockwise, negative = counter-clockwise)
+  controls.autoRotateSpeed = .4;     // adjust rotation speed (positive = clockwise, negative = counter-clockwise)
 
   // ✅ Lock zoom level
   //const lockDistance = camera.position.distanceTo(originalTarget);
@@ -323,6 +461,15 @@ rectLight.lookAt( 0, 0, 0 );
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   scene.add(floor);
+  
+  //outersphere
+  const outerSphere = new THREE.Mesh(
+    new THREE.SphereGeometry( 100, 32, 16 )
+  );
+  outerSphere.material=materialLineOuter;
+  outerSphere.position.y=1;
+  
+  scene.add(outerSphere);
 
   const roof = new THREE.Mesh(
     new THREE.CylinderGeometry(40, 40,1,64),
@@ -467,6 +614,39 @@ loader2.load(
     objectOffsetHeight: .7
 });
   
+  // Place a 16:9 screen at (0,2,-5), rotated slightly
+addScreen({
+  url: "https://video.wixstatic.com/video/25b4fa_7e131bb1b6774460a81ea773e3b54edc/1080p/mp4/file.mp4",
+  width: 25,
+  height: 10,
+  position: [30, 16,-5],
+  rotation: [0, Math.PI*1.50, 0]
+});
+  
+  addScreen({
+  url: "https://video.wixstatic.com/video/25b4fa_7e131bb1b6774460a81ea773e3b54edc/1080p/mp4/file.mp4",
+  width: 25,
+  height: 15,
+  position: [-30, 24,0],
+  rotation: [0, Math.PI*0.50, 0]
+});
+  //behind screen
+  addScreen({
+  url: "https://video.wixstatic.com/video/25b4fa_5727856c53404310908a3443cba08b92/1080p/mp4/file.mp4",
+  width: 12,
+  height: 6.75,
+  position: [0, 6,11],
+  rotation: [0, Math.PI*1, 0]
+});
+  //long forward screen
+    addScreen({
+  url: "https://video.wixstatic.com/video/25b4fa_7e131bb1b6774460a81ea773e3b54edc/1080p/mp4/file.mp4",
+  width: 12,
+  height: 20,
+  position: [0, 20,-31],
+  rotation: [0, Math.PI*2, 0]
+});
+
   
   
   
@@ -529,6 +709,45 @@ scene.add(streakMesh);
         document.getElementById('exitBtn').style.display = 'block';
       }
     }
+    
+    function addScreen({ url, width = 4, height = 2.25, position = [0, 0, 0], rotation = [0, 0, 0] }) {
+  // 1. Create video element
+  const video = document.createElement('video');
+  video.src = url;
+  video.crossOrigin = "anonymous";
+  video.loop = true;
+  video.muted = true; // autoplay requires muted in browsers
+  video.playsInline = true;
+  video.autoplay = true;
+  video.play();
+
+  // 2. Create texture from video
+  const videoTexture = new THREE.VideoTexture(video);
+  videoTexture.minFilter = THREE.LinearFilter;
+  videoTexture.magFilter = THREE.LinearFilter;
+  videoTexture.format = THREE.RGBFormat;
+
+  // 3. Create material
+  const material = new THREE.MeshBasicMaterial({
+    map: videoTexture,
+    side: THREE.FrontSide,
+    toneMapped: false // keeps colors bright
+  });
+
+  // 4. Create plane geometry for screen
+  const geometry = new THREE.PlaneGeometry(width, height);
+  const screenMesh = new THREE.Mesh(geometry, material);
+
+  // 5. Set position + rotation
+  screenMesh.position.set(...position);
+  screenMesh.rotation.set(...rotation);
+
+  // 6. Add to scene
+  scene.add(screenMesh);
+
+  return screenMesh; // return so you can keep a reference if needed
+}
+
     
     function addModelOnPlinth({
       url,             // GLTF url
@@ -600,9 +819,16 @@ scene.add(streakMesh);
         } while (distance < 2);
         podium.position.set(position.x,position.y,position.z);
         podium.rotation.y = rotation;
+      podium.visible=false;
         scene.add(podium);
         podiums.push(podium);
       
+      
+      const pointLight1 = new THREE.PointLight(0xffffff, 50, 12);
+  pointLight1.position.set(position.x,position.y+10,position.z);
+
+  pointLight1.castShadow = false;
+  scene.add(pointLight1);
       
       //podiums.push(group); // store for raycasting
 
@@ -612,6 +838,7 @@ scene.add(streakMesh);
     // 4. Animate
 function animateStreaks(delta) {
   materialLine.uniforms.uTime.value += delta;
+  materialLineOuter.uniforms.uTime.value += delta;
 }
 
 
