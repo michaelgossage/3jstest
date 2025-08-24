@@ -160,7 +160,7 @@ const podiums = [];
 let savedCameraPosition = null;
 let savedCameraTarget = null;
 
-const originalPosition = new THREE.Vector3(0, 2, 10);
+const originalPosition = new THREE.Vector3(0, 2, 8);
 const originalTarget = new THREE.Vector3(0, 2, 0);
 const clock = new THREE.Clock();
     
@@ -249,7 +249,7 @@ function init() {
   scene.background = new THREE.Color(0x000);
   
 
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.copy(originalPosition);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -264,7 +264,22 @@ function init() {
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.target.copy(originalTarget);
+  
+  // ✅ Enable auto-rotate
+  controls.autoRotate = true;         // turn on auto-rotation
+  controls.autoRotateSpeed = 1.0;     // adjust rotation speed (positive = clockwise, negative = counter-clockwise)
+
+  // ✅ Lock zoom level
+  //const lockDistance = camera.position.distanceTo(originalTarget);
+  //controls.minDistance = lockDistance;
+  //controls.maxDistance = lockDistance;
+
+  // disable zooming via scroll
+  controls.enableZoom = false;
+  
   controls.update();
+  
+  
 
   raycaster = new THREE.Raycaster();
   mouse = new THREE.Vector2();
@@ -612,6 +627,7 @@ function animateStreaks(delta) {
       }
       const delta = clock.getDelta();
       animateStreaks(delta);
+      controls.update();
       renderer.render(scene, camera);
     }
   </script>
