@@ -99,6 +99,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  
+<!-- Post-processing -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/FilmPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/BokehShader.js"></script>
+    
 
   <script>
     /* -------------------------------
@@ -218,6 +229,7 @@
 // ✅ Hide audio controls until started
 document.getElementById("audioControls").style.display = "none";
 
+    /*
 startBtn.addEventListener("click", () => {
   // Start spinning
   //controls.autoRotate = true;
@@ -232,11 +244,53 @@ startBtn.addEventListener("click", () => {
   // Hide start button
   startBtn.style.display = "none";
 });
+*/
+    startBtn.addEventListener("click", async () => {
+  // Resume context first
+  if (audioCtx.state === "suspended") {
+    await audioCtx.resume();
+    console.log("AudioContext resumed");
+  }
 
+  // Unmute before play
+  audioElement.muted = false;
+
+  // Play audio
+  try {
+    await audioElement.play();
+    playPauseBtn.textContent = "⏸ Pause";
+  } catch (err) {
+    console.error("Play failed:", err);
+  }
+
+  // Show audio controls
+  document.getElementById("audioControls").style.display = "flex";
+
+  // Hide start button
+  startBtn.style.display = "none";
+});
+
+    audioElement.crossOrigin = "anonymous";
+    
+    //audio sync
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const audioSource = audioCtx.createMediaElementSource(audioElement);
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 256;
+const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+// Connect nodes
+audioSource.connect(analyser);
+analyser.connect(audioCtx.destination);
+
+
+
+    
     /* -------------------------------
        🎨 YOUR EXISTING THREE.JS CODE
     ------------------------------- */
-let scene, camera, renderer, controls;
+let scene, camera, renderer, controls, composer;
 let raycaster, mouse;
 let targetPosition = null;
 let targetLookAt = null;
@@ -276,9 +330,10 @@ const emissiveMaterial = new THREE.ShaderMaterial({
     
  const uniforms = {
   uTime: { value: 0 },
-  uSpeed: { value: 2.0 },
+  uSpeed: { value: 1.5 },
   uFrequency: { value: 80.0 },
-  uDistortion: { value: -0.005 }
+  uDistortion: { value: -0.003 },
+   uAudio: { value: 0.0 } // audio-reactive uniform
 };
 
 // Material
@@ -296,22 +351,76 @@ const materialLine = new THREE.ShaderMaterial({
     uniform float uSpeed;
     uniform float uFrequency;
     uniform float uDistortion;
+    uniform float uAudio;
     varying vec2 vUv;
 
     void main() {
       // Animate UVs along X axis
-      float x = vUv.y * uFrequency + uTime * uSpeed + cos(vUv.x*0.0*uTime);
+      float x = vUv.y * uFrequency + uTime * uSpeed + cos(vUv.x*0.0+uTime);
 
       // Distort Y with a sine wave for wavy streaks
-      float y = vUv.x + sin(vUv.y * 5.0 + uTime) * uDistortion;
+      float y = vUv.x + sin(vUv.y * 5.0 + uTime) * uDistortion ;
 
       // Grid lines by taking fractional part
-      float lineX = abs(sin(x * .31415 * 2.));
-      float lineY = abs(sin(y * 314.15 * 4.));
+      float lineX = abs(sin(x * .31415 * 2.0));
+      float lineY = abs(sin(y * 314.15 * 4.0 ));
 
       // Combine X streaks and faint Y lines for grid effect
       float streaks = smoothstep(0.5, 1.0, lineX);
-      float grid    = smoothstep(0.1, .1, lineY);
+      float grid    = smoothstep(0.1, .2, lineY);
+
+      // Mix streaks (bright laser lines) and faint grid
+      vec3 color = mix(vec3(0, 0., 0.0), vec3(1.0, 1.0, 1.0), streaks);
+      color -= grid * .99;
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `,
+  side: THREE.DoubleSide,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+});
+    const uniformsA = {
+  uTime: { value: 0 },
+  uSpeed: { value: 1.5 },
+  uFrequency: { value: 40.0 },
+  uDistortion: { value: -0.003 },
+   uAudio: { value: 0.0 } // audio-reactive uniform
+};
+
+// Material
+const materialLineA = new THREE.ShaderMaterial({
+  uniforms:uniformsA,
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform float uTime;
+    uniform float uSpeed;
+    uniform float uFrequency;
+    uniform float uDistortion;
+    uniform float uAudio;
+    varying vec2 vUv;
+
+    void main() {
+      // Animate UVs along X axis
+      float x = vUv.y * uFrequency + uTime * uSpeed  + cos(vUv.x*(uAudio*100.0)*2.0+uTime)*uAudio*20.0;
+
+      // Distort Y with a sine wave for wavy streaks
+      float y = vUv.x + sin(vUv.y * 5.0 + uTime) * uDistortion ;
+
+      // Grid lines by taking fractional part
+      float lineX = abs(sin(x * .31415 * 2.0));
+      float lineY = abs(sin(y * 314.15 * 4.0 ));
+
+      // Combine X streaks and faint Y lines for grid effect
+      float streaks = smoothstep(.9, 1.0, lineX);
+      float grid    = smoothstep(0.5, .9, lineY);
 
       // Mix streaks (bright laser lines) and faint grid
       vec3 color = mix(vec3(0, 0., 0.0), vec3(1.0, 1.0, 1.0), streaks);
@@ -399,6 +508,30 @@ function init() {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
   document.body.appendChild(renderer.domElement);
+  
+
+// POST-PROCESSING SETUP
+       composer = new THREE.EffectComposer(renderer);
+  composer.setSize(window.innerWidth, window.innerHeight);
+  // render pass (base scene)
+const renderPass = new THREE.RenderPass(scene, camera);
+composer.addPass(renderPass);
+  
+  // bloom pass
+const bloomPass = new THREE.UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    .2,  // strength
+    0.1,  // radius
+    0.85  // threshold
+);
+composer.addPass(bloomPass);
+  
+
+
+
+
+  
+  //controls
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.target.copy(originalTarget);
@@ -449,7 +582,8 @@ rectLight.lookAt( 0, 0, 0 );
   //scene.add( rectLight )
   
   
-  const geometry1 = new THREE.PlaneGeometry(10, 2, 1, 1);
+  const geometry1 = new THREE.BoxGeometry(1.5, 1
+                                            , 1.5);
    
 
 
@@ -535,7 +669,7 @@ loader.load(
   const loader2 = new THREE.GLTFLoader();
 loader2.load(
   //'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb'
-  'https://static.wixstatic.com/3d/a2e228_1e44de663be545ab82f13cf1f8e09a30.glb',
+  'https://static.wixstatic.com/3d/a2e228_25896596c8f74a9fbadf063c00e6f466.glb',
   function (gltf) {
     const model = gltf.scene;
     model.position.set(0, 0, -3);
@@ -626,6 +760,14 @@ addScreen({
   addScreen({
   url: "https://video.wixstatic.com/video/25b4fa_7e131bb1b6774460a81ea773e3b54edc/1080p/mp4/file.mp4",
   width: 25,
+  height: 10,
+  position: [45, 8,10],
+  rotation: [0, Math.PI*1.37, 0]
+});
+  
+  addScreen({
+  url: "https://video.wixstatic.com/video/25b4fa_7e131bb1b6774460a81ea773e3b54edc/1080p/mp4/file.mp4",
+  width: 25,
   height: 15,
   position: [-30, 24,0],
   rotation: [0, Math.PI*0.50, 0]
@@ -646,16 +788,24 @@ addScreen({
   position: [0, 20,-31],
   rotation: [0, Math.PI*2, 0]
 });
+  
+    //behind screen far
+  addScreen({
+  url: "https://video.wixstatic.com/video/25b4fa_5727856c53404310908a3443cba08b92/1080p/mp4/file.mp4",
+  width: 12,
+  height: 6.75,
+  position: [-5, 24,37],
+  rotation: [0, Math.PI*.9, 0]
+});
 
   
   
   
   
   // 3. Mesh
-const streakMesh = new THREE.Mesh(geometry1, materialLine);
-streakMesh.position.set(0, 2, 0);
+const streakMesh = new THREE.Mesh(geometry1, materialLineA);
+streakMesh.position.set(0, 1, 0);
 scene.add(streakMesh);
-
 
 
 
@@ -684,6 +834,7 @@ scene.add(streakMesh);
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
     }
 
     function onMouseClick(event) {
@@ -839,6 +990,18 @@ scene.add(streakMesh);
 function animateStreaks(delta) {
   materialLine.uniforms.uTime.value += delta;
   materialLineOuter.uniforms.uTime.value += delta;
+  
+  //Audio reactive stuff
+  // Get average frequency from analyser
+  analyser.getByteFrequencyData(dataArray);
+
+  // Compute normalized audio value (0-1)
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += dataArray[i];
+  }
+  const avg = sum / dataArray.length;
+  uniformsA.uAudio.value = avg / 255; // normalized
 }
 
 
@@ -855,7 +1018,11 @@ function animateStreaks(delta) {
       const delta = clock.getDelta();
       animateStreaks(delta);
       controls.update();
-      renderer.render(scene, camera);
+      
+      
+      //renderer.render(scene, camera);
+      // Render with post-processing
+      composer.render();
     }
   </script>
 </body>
