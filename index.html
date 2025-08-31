@@ -67,6 +67,19 @@
       cursor: pointer;
       z-index: 100;
     }
+    #instructions {
+      display: none;
+      position: absolute;
+      top: 10px;
+      left:10px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 0px;
+      align-items: center;
+      gap: 10px;
+      z-index: 20;
+      color:white;
+    }
     button {
       background: #444;
       color: white;
@@ -81,17 +94,19 @@
   </style>
 </head>
 <body>
-  <button id="startBtn">▶ Start Experience</button>
+  <button id="startBtn">▶ Start Experience<p style="font-size:.5em;">WARNING: This content contains flashing images or patterns that may trigger seizures in individuals with photosensitive epilepsy or other light-sensitive conditions. Viewer discretion is advised. </p></button>
   <button id="exitBtn">Exit</button>
   <div id="subtitleBox"></div>
 
   <!-- Custom audio controls -->
   <div id="audioControls">
+    
     <button id="playPauseBtn">▶ Play</button>
     <button id="muteBtn">Mute</button>
     <input type="range" id="seekBar" value="0" min="0" max="100" step="0.1">
   </div>
 
+  <div id="instructions">Click on 3d</div>
   <audio id="voiceover" preload="auto"></audio>
   
   
@@ -228,7 +243,7 @@
 
 // ✅ Hide audio controls until started
 document.getElementById("audioControls").style.display = "none";
-
+document.getElementById("instructions").style.display = "none";
     /*
 startBtn.addEventListener("click", () => {
   // Start spinning
@@ -265,11 +280,12 @@ startBtn.addEventListener("click", () => {
 
   // Show audio controls
   document.getElementById("audioControls").style.display = "flex";
-
+document.getElementById("instructions").style.display = "flex";
   // Hide start button
   startBtn.style.display = "none";
 });
 
+    //this is needed for audio reactive to work
     audioElement.crossOrigin = "anonymous";
     
     //audio sync
@@ -363,14 +379,14 @@ const materialLine = new THREE.ShaderMaterial({
 
       // Grid lines by taking fractional part
       float lineX = abs(sin(x * .31415 * 2.0));
-      float lineY = abs(sin(y * 314.15 * 4.0 ));
+      float lineY = abs(sin(y * 314.15 * 6.0 ));
 
       // Combine X streaks and faint Y lines for grid effect
       float streaks = smoothstep(0.5, 1.0, lineX);
       float grid    = smoothstep(0.1, .2, lineY);
 
       // Mix streaks (bright laser lines) and faint grid
-      vec3 color = mix(vec3(0, 0., 0.0), vec3(1.0, 1.0, 1.0), streaks);
+      vec3 color = mix(vec3(.0, 0., 0.05), vec3(0, 0.3, .8), streaks);
       color -= grid * .99;
 
       gl_FragColor = vec4(color, 1.0);
@@ -582,15 +598,14 @@ rectLight.lookAt( 0, 0, 0 );
   //scene.add( rectLight )
   
   
-  const geometry1 = new THREE.BoxGeometry(1.5, 1
-                                            , 1.5);
+
    
 
 
   // Floor
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(600, 600),
-    new THREE.MeshStandardMaterial({ color: 0x111111 })
+    new THREE.MeshStandardMaterial({ color: 0x070707 })
   );
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
@@ -696,23 +711,28 @@ loader2.load(
   }
 );
   
+  //3d models
+  
+  //first costume scan
   addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb',
+  url: 'https://static.wixstatic.com/3d/a2e228_2b57df5830ae4be7b45a9e5b0439b05e.glb',
   position: new THREE.Vector3(0, 0, -14),
-  rotation: Math.PI / 4,
-  scale: .1,
+  rotation: Math.PI *2,
+  scale: .25,
   plinthHeight: 1,
-  plinthRadius: .6,
-    objectOffsetHeight: .7
+  plinthRadius: .8,
+    objectOffsetHeight:0,
+    objectOffsetRotation: 0.5
 });
     addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb',
+  url: 'https://static.wixstatic.com/3d/a2e228_2b57df5830ae4be7b45a9e5b0439b05e.glb',
   position: new THREE.Vector3(10, 0, 10),
-  rotation: Math.PI / 4,
-  scale: .1,
+  rotation: Math.PI *1.25,
+  scale: .25,
   plinthHeight: 1,
-  plinthRadius: .6,
-    objectOffsetHeight: .7
+  plinthRadius: .8,
+    objectOffsetHeight: 0,
+      objectOffsetRotation: 0.5
 });
 
     addModelOnPlinth({
@@ -734,7 +754,8 @@ loader2.load(
   scale: .1,
   plinthHeight: 1,
   plinthRadius: .6,
-    objectOffsetHeight: .7
+    objectOffsetHeight: .7,
+       objectOffsetRotation: 0
 }); 
   
   
@@ -799,14 +820,16 @@ addScreen({
 });
 
   
-  
-  
-  
-  // 3. Mesh
-const streakMesh = new THREE.Mesh(geometry1, materialLineA);
-streakMesh.position.set(0, 1, 0);
-scene.add(streakMesh);
+    // 3. Audio Mesh
+    const geometry1 = new THREE.SphereGeometry(1.2, 1 , 1);
 
+
+const streakMesh = new THREE.Mesh(geometry1, materialLineA);
+ 
+streakMesh.position.set(0, 1.5, 0);
+scene.add(streakMesh);
+   //streakMesh.rotation.x = Math.PI / 4; 
+//streakMesh.rotation.y = Math.PI / 4; 
 
 
 
@@ -852,9 +875,9 @@ scene.add(streakMesh);
         frontDirection.applyEuler(podium.rotation);
         const cameraOffset = frontDirection.multiplyScalar(3);
         targetPosition = podiumPos.clone().add(cameraOffset);
-        targetPosition.y = podiumPos.y + 1.8;
+        targetPosition.y = podiumPos.y + .5;
         targetLookAt = podiumPos.clone();
-        targetLookAt.y += 1.3;
+        targetLookAt.y += 0;
         zooming = true;
         controls.enabled = false;
         document.getElementById('exitBtn').style.display = 'block';
@@ -907,7 +930,8 @@ scene.add(streakMesh);
       scale = 1,       // uniform scale
       plinthHeight = 1,
       plinthRadius = 0.7,
-      objectOffsetHeight=0.5
+      objectOffsetHeight=0.5,
+      objectOffsetRotation=0
     }) {
       const group = new THREE.Group();
       group.position.copy(position);
@@ -916,7 +940,7 @@ scene.add(streakMesh);
       // Cylinder plinth
       const plinth = new THREE.Mesh(
         new THREE.CylinderGeometry(plinthRadius, plinthRadius, plinthHeight, 32),
-        new THREE.MeshStandardMaterial({ color: 0x888888 })
+        new THREE.MeshStandardMaterial({ color: 0x777777 })
       );
       plinth.position.y = plinthHeight / 2; // lift so bottom sits at ground
       plinth.castShadow = true;
@@ -931,7 +955,7 @@ scene.add(streakMesh);
 
         // place on top of plinth
         model.position.y = plinthHeight+objectOffsetHeight;
-
+        model.rotation.y=objectOffsetRotation;
         model.traverse((child) => {
           if (child.isMesh) {
             child.castShadow = true;
@@ -958,9 +982,10 @@ scene.add(streakMesh);
       //group.userData.isClickable = true;
       
       const podium = new THREE.Mesh(
-          new THREE.BoxGeometry(2, 2, 2),
+          new THREE.BoxGeometry(2, 4, 2),
          
         );
+      
         let x, z, distance;
         do {
           const angle = Math.random() * Math.PI * 2;
@@ -968,7 +993,7 @@ scene.add(streakMesh);
           x = Math.cos(angle) * distance;
           z = Math.sin(angle) * distance;
         } while (distance < 2);
-        podium.position.set(position.x,position.y,position.z);
+        podium.position.set(position.x,position.y+2,position.z);
         podium.rotation.y = rotation;
       podium.visible=false;
         scene.add(podium);
