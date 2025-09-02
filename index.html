@@ -735,21 +735,13 @@ loader2.load(
       objectOffsetRotation: 0.5
 });
 
-    addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb',
-  position: new THREE.Vector3(14, 0, 0),
-  rotation: Math.PI / 8,
-  scale: .1,
-  plinthHeight: 1,
-  plinthRadius: .6,
-    objectOffsetHeight: .7
-});
+
 
   
   
      addModelOnPlinth({
   url: 'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb',
-  position: new THREE.Vector3(-10, 0, -10),
+  position: new THREE.Vector3(-10, 0, 0),
   rotation: Math.PI / 8,
   scale: .1,
   plinthHeight: 1,
@@ -761,7 +753,7 @@ loader2.load(
   
       addModelOnPlinth({
   url: 'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb',
-  position: new THREE.Vector3(10, 0, -10),
+  position: new THREE.Vector3(10, 0, -4),
   rotation: Math.PI / 8,
   scale: .1,
   plinthHeight: 1,
@@ -770,6 +762,7 @@ loader2.load(
 });
   
   // Place a 16:9 screen at (0,2,-5), rotated slightly
+  //toms film
 addScreen({
   url: "https://video.wixstatic.com/video/25b4fa_7e131bb1b6774460a81ea773e3b54edc/1080p/mp4/file.mp4",
   width: 25,
@@ -777,9 +770,9 @@ addScreen({
   position: [30, 16,-5],
   rotation: [0, Math.PI*1.50, 0]
 });
-  
+  //ual ffaward
   addScreen({
-  url: "https://video.wixstatic.com/video/25b4fa_7e131bb1b6774460a81ea773e3b54edc/1080p/mp4/file.mp4",
+  url: "https://video.wixstatic.com/video/a2e228_fe5167c3632a45ef901aeeadd24d1489/720p/mp4/file.mp4",
   width: 25,
   height: 10,
   position: [45, 8,10],
@@ -787,7 +780,7 @@ addScreen({
 });
   
   addScreen({
-  url: "https://video.wixstatic.com/video/25b4fa_7e131bb1b6774460a81ea773e3b54edc/1080p/mp4/file.mp4",
+  url: "https://video.wixstatic.com/video/bf8dab_38d3e799a4b34f8aa11cff81ebbd7105/1080p/mp4/file.mp4",
   width: 25,
   height: 15,
   position: [-30, 24,0],
@@ -1001,7 +994,9 @@ scene.add(streakMesh);
       
       
       const pointLight1 = new THREE.PointLight(0xffffff, 50, 12);
+      pointLight1 .rotation.y = rotation;
   pointLight1.position.set(position.x,position.y+10,position.z);
+      pointLight1.translateZ(2);
 
   pointLight1.castShadow = false;
   scene.add(pointLight1);
