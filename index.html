@@ -5,19 +5,21 @@
   <meta charset="UTF-8">
   <title>Three.js Gallery Teleport with Voiceover</title>
   <style>
-    html, body { margin: 0; overflow: hidden; height: 100%; font-family: "Helvetica", Arial, sans-serif; }
+    html, body { margin: 0; overflow: hidden; height: 100%; font-family: "Arial", Arial, sans-serif; }
     #exitBtn {
       position: absolute;
-      top: 10px;
-      right: 10px;
+
+      bottom: 25%;
+      right:10%;
       z-index: 10;
       padding: 10px 15px;
       background: rgba(0,0,0,0.7);
       color: white;
       border: none;
-      font-size: 16px;
+      font-size: 24px;
       cursor: pointer;
       display: none;
+      text-align: center;
     }
     #subtitleBox {
       position: absolute;
@@ -95,7 +97,7 @@
 </head>
 <body>
   <button id="startBtn">▶ Start Experience<p style="font-size:.5em;">WARNING: This content contains flashing images or patterns that may trigger seizures in individuals with photosensitive epilepsy or other light-sensitive conditions. Viewer discretion is advised. </p></button>
-  <button id="exitBtn">Exit</button>
+  <button id="exitBtn">X</button>
   <div id="subtitleBox"></div>
 
   <!-- Custom audio controls -->
@@ -106,7 +108,7 @@
     <input type="range" id="seekBar" value="0" min="0" max="100" step="0.1">
   </div>
 
-  <div id="instructions">Click on 3d</div>
+  <div id="instructions">Click and drag to reframe the camera. <br><br>Click on artworks to zoom in.</div>
   <audio id="voiceover" preload="auto"></audio>
   
   
@@ -114,16 +116,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
   
 <!-- Post-processing -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/FilmPass.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/BokehShader.js"></script>
+
     
 
   <script>
@@ -283,6 +286,13 @@ startBtn.addEventListener("click", () => {
 document.getElementById("instructions").style.display = "flex";
   // Hide start button
   startBtn.style.display = "none";
+      // Play all screens
+  screens.forEach(video => {
+    video.muted = false; // unmute if needed
+    video.play().catch(e => console.warn("Video play prevented:", e));
+  });
+      //make 3d stuff clickable
+      experienceStarted = true;
 });
 
     //this is needed for audio reactive to work
@@ -313,6 +323,8 @@ let targetLookAt = null;
 let zooming = false;
 const zoomSpeed = 0.05;
 const podiums = [];
+    const screens = []; // store all video elements
+    let experienceStarted = false;
 
 let savedCameraPosition = null;
 let savedCameraTarget = null;
@@ -378,16 +390,19 @@ const materialLine = new THREE.ShaderMaterial({
       float y = vUv.x + sin(vUv.y * 5.0 + uTime) * uDistortion ;
 
       // Grid lines by taking fractional part
-      float lineX = abs(sin(x * .31415 * 2.0));
-      float lineY = abs(sin(y * 314.15 * 6.0 ));
+      float lineX = abs(sin(x * .31415 * 60.0));
+      float lineY = abs(sin(y * 314.15 * 12.0 ));
+      float lineX2 = abs(sin(x * .31415 * 2.0));
 
       // Combine X streaks and faint Y lines for grid effect
       float streaks = smoothstep(0.5, 1.0, lineX);
       float grid    = smoothstep(0.1, .2, lineY);
+      float breaks = smoothstep(0.1,1.0,lineX2);
 
       // Mix streaks (bright laser lines) and faint grid
-      vec3 color = mix(vec3(.0, 0., 0.05), vec3(0, 0.3, .8), streaks);
+      vec3 color = mix(vec3(.0, 0., 0.0), vec3(.5, .5, .5), streaks);
       color -= grid * .99;
+      color-=breaks*.5;
 
       gl_FragColor = vec4(color, 1.0);
     }
@@ -653,7 +668,8 @@ rectLight.lookAt( 0, 0, 0 );
   const loader = new THREE.GLTFLoader();
 loader.load(
   //'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb'
-  'https://static.wixstatic.com/3d/a2e228_247044ddb9ca45c4aa950ba98b4e2993.glb',
+  //'https://static.wixstatic.com/3d/a2e228_247044ddb9ca45c4aa950ba98b4e2993.glb'
+  'https://static.wixstatic.com/3d/a2e228_9ac5269f6d664fc4aa1c82e4a1e8a8fc.glb',
   function (gltf) {
     const model = gltf.scene;
     model.position.set(0, 0, -3);
@@ -684,7 +700,8 @@ loader.load(
   const loader2 = new THREE.GLTFLoader();
 loader2.load(
   //'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb'
-  'https://static.wixstatic.com/3d/a2e228_25896596c8f74a9fbadf063c00e6f466.glb',
+  //'https://static.wixstatic.com/3d/a2e228_25896596c8f74a9fbadf063c00e6f466.glb'
+  'https://static.wixstatic.com/3d/a2e228_9ac5269f6d664fc4aa1c82e4a1e8a8fc.glb',
   function (gltf) {
     const model = gltf.scene;
     model.position.set(0, 0, -3);
@@ -713,7 +730,22 @@ loader2.load(
   
   //3d models
   
-  //first costume scan
+  //logo
+    addModelOnPlinth({
+  url: 'https://static.wixstatic.com/3d/a2e228_b95a1d6fdedd4df9bee1701ab00fa470.glb',
+  position: new THREE.Vector3(0, 12, -20),
+  rotation: Math.PI *2,
+  scale: 1.5,
+  plinthHeight: 0,
+  plinthRadius: 0,
+    objectOffsetHeight:0,
+    objectOffsetRotation: 0,
+      clickable:false,
+      light_ :false,
+      emissiveWhite:true
+});
+  
+  //front 8
   addModelOnPlinth({
   url: 'https://static.wixstatic.com/3d/a2e228_2b57df5830ae4be7b45a9e5b0439b05e.glb',
   position: new THREE.Vector3(0, 0, -14),
@@ -724,41 +756,44 @@ loader2.load(
     objectOffsetHeight:0,
     objectOffsetRotation: 0.5
 });
+  
+  //back right 33
     addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_2b57df5830ae4be7b45a9e5b0439b05e.glb',
+  url: 'https://static.wixstatic.com/3d/a2e228_76f2e3e3c91a4494b6404721a61a34d1.glb',
   position: new THREE.Vector3(10, 0, 10),
   rotation: Math.PI *1.25,
-  scale: .25,
+  scale: .22,
   plinthHeight: 1,
   plinthRadius: .8,
     objectOffsetHeight: 0,
-      objectOffsetRotation: 0.5
+      objectOffsetRotation: Math.PI
 });
 
 
 
-  
+  //left 3
   
      addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb',
-  position: new THREE.Vector3(-10, 0, 0),
-  rotation: Math.PI / 8,
-  scale: .1,
+  url: 'https://static.wixstatic.com/3d/a2e228_1532b0181efd484b8d87d6cabfffc3f9.glb',
+  position: new THREE.Vector3(-10, 0, 6),
+  rotation: Math.PI * 2.7,
+  scale: .3,
   plinthHeight: 1,
-  plinthRadius: .6,
-    objectOffsetHeight: .7,
+  plinthRadius: .7,
+    objectOffsetHeight: 0,
        objectOffsetRotation: 0
 }); 
   
-  
+  //right 9
       addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb',
-  position: new THREE.Vector3(10, 0, -4),
-  rotation: Math.PI / 8,
-  scale: .1,
+  url: 'https://static.wixstatic.com/3d/a2e228_16f876eadfac4d149dd5fd1dc72480e1.glb',
+  position: new THREE.Vector3(11, 0, -4),
+  rotation: Math.PI*1.6,
+  scale: .45,
   plinthHeight: 1,
-  plinthRadius: .6,
-    objectOffsetHeight: .7
+  plinthRadius: .9,
+    objectOffsetHeight: 0,
+       objectOffsetRotation: 0
 });
   
   // Place a 16:9 screen at (0,2,-5), rotated slightly
@@ -778,39 +813,113 @@ addScreen({
   position: [45, 8,10],
   rotation: [0, Math.PI*1.37, 0]
 });
-  
+  //beth fraiser
   addScreen({
   url: "https://video.wixstatic.com/video/bf8dab_38d3e799a4b34f8aa11cff81ebbd7105/1080p/mp4/file.mp4",
   width: 25,
-  height: 15,
+  height: 14,
   position: [-30, 24,0],
   rotation: [0, Math.PI*0.50, 0]
 });
   //behind screen
-  addScreen({
+ /* addScreen({
   url: "https://video.wixstatic.com/video/25b4fa_5727856c53404310908a3443cba08b92/1080p/mp4/file.mp4",
   width: 12,
   height: 6.75,
   position: [0, 6,11],
   rotation: [0, Math.PI*1, 0]
-});
+});*/
   //long forward screen
-    addScreen({
+   /* addScreen({
   url: "https://video.wixstatic.com/video/25b4fa_7e131bb1b6774460a81ea773e3b54edc/1080p/mp4/file.mp4",
   width: 12,
   height: 20,
   position: [0, 20,-31],
   rotation: [0, Math.PI*2, 0]
-});
+});*/
   
     //behind screen far
   addScreen({
   url: "https://video.wixstatic.com/video/25b4fa_5727856c53404310908a3443cba08b92/1080p/mp4/file.mp4",
-  width: 12,
-  height: 6.75,
+  width: 18,
+  height: 10,
   position: [-5, 24,37],
-  rotation: [0, Math.PI*.9, 0]
+  rotation: [0, Math.PI*.95, 0]
 });
+  
+  //ma photos
+    addScreen({
+  url: "https://static.wixstatic.com/media/a2e228_35e3fe1810774025bcff6fc1771a9828~mv2.jpg",
+  width: 3,
+  height: 4,
+  position: [10, 3,-18],
+  rotation: [0, Math.PI*1.8, 0],
+          clickable:true,
+          text:"Paige Lee Miller",
+          fontSize:30
+});
+      addScreen({
+  url: "https://static.wixstatic.com/media/a2e228_24efecce13e2479ba14108cab139ce1f~mv2.jpg",
+  width: 3,
+  height: 4,
+  position: [13, 3,-15.5],
+  rotation: [0, Math.PI*1.75, 0],
+        text:"Andrea Brandt",
+          clickable:true
+});
+      addScreen({
+  url: "https://static.wixstatic.com/media/a2e228_bb25ca93634a40a4a7ec1036d87ef42f~mv2.jpg",
+  width: 3,
+  height: 4,
+  position: [15, 3,-12],
+  rotation: [0, Math.PI*1.65, 0],
+          clickable:true,
+          text:"Ana Margarita Flores",
+          fontSize:30
+});
+
+  
+  //ba photography
+      addScreen({
+  url: "https://static.wixstatic.com/media/a2e228_1002331e45c941c597edb9c7e7aada8c~mv2.jpg",
+  width: 3,
+  height: 4,
+  position: [-15, 3,-2],
+  rotation: [0, Math.PI*.5, 0],
+        offsetClick:.7,
+          clickable:true,
+          text:"Ana Margarita Flores",
+          fontSize:30
+});
+  
+
+
+        addScreen({
+  url: "https://static.wixstatic.com/media/a2e228_b4eb45cfdfd4487d9417a0f81826f07d~mv2.jpg",
+  width: 3,
+  height: 4,
+  position: [-14, 3,-6],
+  rotation: [0, Math.PI*.35, 0],
+          offsetClick:.7,
+          clickable:true,
+          text:"Ana Margarita Flores",
+          fontSize:30
+          
+});
+        addScreen({
+  url: "https://static.wixstatic.com/media/a2e228_fee41ee6c02c4d03a7ea96cb6403f5ce~mv2.jpg",
+  width: 3,
+  height: 4,
+  position: [-11.5, 3,-9.5],
+  rotation: [0, Math.PI*.225, 0],
+          offsetClick:.7,
+          clickable:true,
+          text:"Jiayi Xu",
+          fontSize:30
+});
+  
+  
+
 
   
     // 3. Audio Mesh
@@ -854,6 +963,7 @@ scene.add(streakMesh);
     }
 
     function onMouseClick(event) {
+      if(experienceStarted==false)return;
       if (!controls.enabled) return;
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -866,7 +976,7 @@ scene.add(streakMesh);
         const podiumPos = podium.position.clone();
         const frontDirection = new THREE.Vector3(0, 0, 1);
         frontDirection.applyEuler(podium.rotation);
-        const cameraOffset = frontDirection.multiplyScalar(3);
+        const cameraOffset = frontDirection.multiplyScalar(4);
         targetPosition = podiumPos.clone().add(cameraOffset);
         targetPosition.y = podiumPos.y + .5;
         targetLookAt = podiumPos.clone();
@@ -877,134 +987,218 @@ scene.add(streakMesh);
       }
     }
     
-    function addScreen({ url, width = 4, height = 2.25, position = [0, 0, 0], rotation = [0, 0, 0] }) {
-  // 1. Create video element
-  const video = document.createElement('video');
-  video.src = url;
-  video.crossOrigin = "anonymous";
-  video.loop = true;
-  video.muted = true; // autoplay requires muted in browsers
-  video.playsInline = true;
-  video.autoplay = true;
-  video.play();
+    
+    function addScreen({ 
+  url, 
+  width = 4, 
+  height = 2.25, 
+  position = [0, 0, 0], 
+  rotation = [0, 0, 0],
+      offsetClick=0,
+  clickable = false,
+      text="",
+      fontSize=30
+}) {
+  let texture;
 
-  // 2. Create texture from video
-  const videoTexture = new THREE.VideoTexture(video);
-  videoTexture.minFilter = THREE.LinearFilter;
-  videoTexture.magFilter = THREE.LinearFilter;
-  videoTexture.format = THREE.RGBFormat;
+  // Detect video vs image
+  const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
 
-  // 3. Create material
+  if (isVideo) {
+    const video = document.createElement('video');
+    
+    video.src = url;
+    video.crossOrigin = "anonymous";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play();
+     screens.push(video); // store it for later
+
+    texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.format = THREE.RGBFormat;
+  } else {
+    texture = new THREE.TextureLoader().load(url);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.format = THREE.RGBFormat;
+  }
+
+  // Material
   const material = new THREE.MeshBasicMaterial({
-    map: videoTexture,
+    map: texture,
     side: THREE.FrontSide,
-    toneMapped: false // keeps colors bright
+    toneMapped: false
   });
 
-  // 4. Create plane geometry for screen
+  // Plane
   const geometry = new THREE.PlaneGeometry(width, height);
   const screenMesh = new THREE.Mesh(geometry, material);
-
-  // 5. Set position + rotation
   screenMesh.position.set(...position);
   screenMesh.rotation.set(...rotation);
-
-  // 6. Add to scene
   scene.add(screenMesh);
 
-  return screenMesh; // return so you can keep a reference if needed
+  // Clickable podium (optional)
+  if (clickable) {
+    const podium = new THREE.Mesh(
+      new THREE.BoxGeometry(width, height, 1),
+      new THREE.MeshBasicMaterial({ visible: false })
+    );
+    //let a = position-offsetClick;
+    podium.position.set(position[0],position[1]-offsetClick,position[2]);
+    podium.rotation.set(...rotation);
+    scene.add(podium);
+    podiums.push(podium);
+  }
+      
+        const textMesh = makeTextPlane(text, { fontsize: fontSize, textColor: { r: 200, g: 255, b: 200 } });
+textMesh.position.set(position[0],position[1]-(height/2)-.3,position[2]);
+  textMesh.rotation.set(...rotation);
+scene.add(textMesh);
+
+  return screenMesh;
 }
 
-    
+
     function addModelOnPlinth({
-      url,             // GLTF url
-      position,        // THREE.Vector3
-      rotation = 0,    // y-axis rotation in radians
-      scale = 1,       // uniform scale
-      plinthHeight = 1,
-      plinthRadius = 0.7,
-      objectOffsetHeight=0.5,
-      objectOffsetRotation=0
-    }) {
-      const group = new THREE.Group();
-      group.position.copy(position);
-      group.rotation.y = rotation;
+  url,             // GLTF url
+  position,        // THREE.Vector3
+  rotation = 0,    // y-axis rotation in radians
+  scale = 1,       // uniform scale
+  plinthHeight = 1,
+  plinthRadius = 0.7,
+  objectOffsetHeight = 0.5,
+  objectOffsetRotation = 0,
+  clickable = true,
+  light_ = true,
+  emissiveWhite = false   // <-- NEW OPTION
+}) {
+  const group = new THREE.Group();
+  group.position.copy(position);
+  group.rotation.y = rotation;
 
-      // Cylinder plinth
-      const plinth = new THREE.Mesh(
-        new THREE.CylinderGeometry(plinthRadius, plinthRadius, plinthHeight, 32),
-        new THREE.MeshStandardMaterial({ color: 0x777777 })
-      );
-      plinth.position.y = plinthHeight / 2; // lift so bottom sits at ground
-      plinth.castShadow = true;
-      plinth.receiveShadow = true;
-      group.add(plinth);
+  // Cylinder plinth
+  const plinth = new THREE.Mesh(
+    new THREE.CylinderGeometry(plinthRadius, plinthRadius, plinthHeight, 32),
+    new THREE.MeshStandardMaterial({ color: 0x777777 })
+  );
+  plinth.position.y = plinthHeight / 2; // lift so bottom sits at ground
+  plinth.castShadow = true;
+  plinth.receiveShadow = true;
+  group.add(plinth);
 
-      // Load model
-      const loader = new THREE.GLTFLoader();
-      loader.load(url, (gltf) => {
-        const model = gltf.scene;
-        model.scale.setScalar(scale);
+  // Load model
+  const loader = new THREE.GLTFLoader();
+  loader.load(url, (gltf) => {
+    const model = gltf.scene;
+    model.scale.setScalar(scale);
 
-        // place on top of plinth
-        model.position.y = plinthHeight+objectOffsetHeight;
-        model.rotation.y=objectOffsetRotation;
-        model.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
+    // place on top of plinth
+    model.position.y = plinthHeight + objectOffsetHeight;
+    model.rotation.y = objectOffsetRotation;
+    model.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = false;
 
-            // Convert unlit materials if needed
-            if (child.material.type === "MeshBasicMaterial") {
-              child.material = new THREE.MeshStandardMaterial({
-                map: child.material.map || null,
-                color: child.material.color || new THREE.Color(0xffffff),
-                metalness: 0.3,
-                roughness: 0.7
-              });
-            }
+        if (emissiveWhite) {
+          // Force emissive white
+          child.material = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            emissive: 0xffffff,
+            emissiveIntensity: 1.5,
+            metalness: 0,
+            roughness: 0
+          });
+        } else {
+          // Convert unlit/basic if needed
+          if (child.material.type === "MeshBasicMaterial") {
+            child.material = new THREE.MeshStandardMaterial({
+              map: child.material.map || null,
+              color: child.material.color || new THREE.Color(0xffffff),
+              metalness: 0.3,
+              roughness: 0.7
+            });
           }
-        });
+        }
+      }
+    });
 
-        group.add(model);
-      });
+    group.add(model);
+  });
 
-      scene.add(group);
+  scene.add(group);
 
-      // Add click-to-move
-      //group.userData.isClickable = true;
-      
-      const podium = new THREE.Mesh(
-          new THREE.BoxGeometry(2, 4, 2),
-         
-        );
-      
-        let x, z, distance;
-        do {
-          const angle = Math.random() * Math.PI * 2;
-          distance = 3 + Math.random() * 8;
-          x = Math.cos(angle) * distance;
-          z = Math.sin(angle) * distance;
-        } while (distance < 2);
-        podium.position.set(position.x,position.y+2,position.z);
-        podium.rotation.y = rotation;
-      podium.visible=false;
-        scene.add(podium);
-        podiums.push(podium);
-      
-      
-      const pointLight1 = new THREE.PointLight(0xffffff, 50, 12);
-      pointLight1 .rotation.y = rotation;
-  pointLight1.position.set(position.x,position.y+10,position.z);
-      pointLight1.translateZ(2);
+  // Add click-to-move bounding box
+  if (clickable) {
+    const podium = new THREE.Mesh(new THREE.BoxGeometry(2, 4, 2));
+    let x, z, distance;
+    do {
+      const angle = Math.random() * Math.PI * 2;
+      distance = 3 + Math.random() * 8;
+      x = Math.cos(angle) * distance;
+      z = Math.sin(angle) * distance;
+    } while (distance < 2);
+    podium.position.set(position.x, position.y + 2, position.z);
+    podium.rotation.y = rotation;
+    podium.visible = false;
+    scene.add(podium);
+    podiums.push(podium);
+  }
 
-  pointLight1.castShadow = false;
-  scene.add(pointLight1);
-      
-      //podiums.push(group); // store for raycasting
+  if (light_) {
+    const pointLight1 = new THREE.PointLight(0xffffff, 50, 12);
+    pointLight1.rotation.y = rotation;
+    pointLight1.position.set(position.x, position.y + 10, position.z);
+    pointLight1.translateZ(2);
+    pointLight1.castShadow = false;
+    scene.add(pointLight1);
+  }
 
-      return group;
-    }
+  return group;
+}
+    
+ function makeTextPlane(message, parameters = {}) {
+  const fontface = parameters.fontface || "Arial";
+  const fontsize = parameters.fontsize || 64;
+  const textColor = parameters.textColor || { r: 255, g: 255, b: 255 };
+
+  // create canvas
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  context.font = `${fontsize}px ${fontface}`;
+
+  // adjust canvas size to fit text
+  const textWidth = context.measureText(message).width;
+  canvas.width = textWidth + 20;
+  canvas.height = fontsize * 1.5;
+
+  // redraw with proper resolution
+  context.font = `${fontsize}px ${fontface}`;
+  context.fillStyle = `rgb(${textColor.r},${textColor.g},${textColor.b})`;
+  context.fillText(message, 10, fontsize);
+
+  // canvas → texture
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+
+  // make material
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    side: THREE.DoubleSide
+  });
+
+  // plane geometry matches canvas ratio
+  const geometry = new THREE.PlaneGeometry(canvas.width / 100, canvas.height / 100);
+  const mesh = new THREE.Mesh(geometry, material);
+
+  return mesh;
+}
+
     
     // 4. Animate
 function animateStreaks(delta) {
