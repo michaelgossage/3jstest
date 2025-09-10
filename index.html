@@ -11,8 +11,7 @@
 
       bottom: 25%;
       right:10%;
-       //left: 50%;            /* push to middle */
-  //transform: translateX(-50%); /* pull back by half its width */
+
       z-index: 10;
       padding: 10px 15px;
       background: rgba(0,0,0,0.7);
@@ -111,7 +110,8 @@
   </style>
 </head>
 <body>
-  <button id="startBtn">▶ Start Experience<p style="font-size:.5em;">WARNING: This content contains flashing images or patterns that may trigger seizures in individuals with photosensitive epilepsy or other light-sensitive conditions. Viewer discretion is advised. </p></button>
+  <button id="startBtn">▶ Click to Begin<p style="font-size:.6em;text-align: left;">Click and drag to reframe the camera.<br><br>Click on artworks to zoom in.</p>
+    <p style="font-size:.6em;text-align: left;"><br>WARNING: This content contains flashing images or patterns that may trigger seizures in individuals with photosensitive epilepsy or other light-sensitive conditions. Viewer discretion is advised. </p></button>
   <button id="exitBtn">X</button>
   <div id="subtitleBox"></div>
 
@@ -792,8 +792,8 @@ loader2.load(
   
      addModelOnPlinth({
   url: 'https://static.wixstatic.com/3d/a2e228_1532b0181efd484b8d87d6cabfffc3f9.glb',
-  position: new THREE.Vector3(-10, 0, 6),
-  rotation: Math.PI * 2.7,
+  position: new THREE.Vector3(-11, 0, 4),
+  rotation: Math.PI * 2.6,
   scale: .3,
   plinthHeight: 1,
   plinthRadius: .7,
@@ -814,6 +814,22 @@ loader2.load(
        objectOffsetRotation: 0,
         text:"Chih yang"
 });
+  
+    //right 15
+      addModelOnPlinth({
+  url: 'https://static.wixstatic.com/3d/a2e228_bf001c28e2204aa28a2a0a6e114911a5.glb',
+  position: new THREE.Vector3(-8, 0, 10),
+  rotation: Math.PI*2.8,
+  scale: .4,
+  plinthHeight: 1,
+  plinthRadius: .9,
+    objectOffsetHeight: 0,
+       objectOffsetRotation: 1.8,
+        text:"Kiachen"
+});
+  
+  
+  
   
   // Place a 16:9 screen at (0,2,-5), rotated slightly
   //toms film
