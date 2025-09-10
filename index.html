@@ -11,6 +11,8 @@
 
       bottom: 25%;
       right:10%;
+       //left: 50%;            /* push to middle */
+  //transform: translateX(-50%); /* pull back by half its width */
       z-index: 10;
       padding: 10px 15px;
       background: rgba(0,0,0,0.7);
@@ -90,6 +92,19 @@
       cursor: pointer;
       border-radius: 0px;
     }
+    .audioButtons {
+  background:rgba(0,0,0,0);
+  color: white;
+  border: 1px solid white; /* thick white outline */
+  width: 70px;  /* fixed square size */
+  height: 40px; /* fixed square size */
+  cursor: pointer;
+  border-radius: 0; /* sharp corners */
+  padding: 0;!important /* remove internal padding to keep it square */
+  font-size: 40px;!important /* adjust as needed for text */
+  text-align: center;
+}
+
     button:hover {
       background: #666;
     }
@@ -103,8 +118,8 @@
   <!-- Custom audio controls -->
   <div id="audioControls">
     
-    <button id="playPauseBtn">▶ Play</button>
-    <button id="muteBtn">Mute</button>
+    <button id="playPauseBtn" class="audioButtons">▶</button>
+    <button id="muteBtn" class="audioButtons">Mute</button>
     <input type="range" id="seekBar" value="0" min="0" max="100" step="0.1">
   </div>
 
@@ -198,17 +213,17 @@
     playPauseBtn.addEventListener("click", () => {
       if (audioElement.paused) {
         audioElement.play();
-        playPauseBtn.textContent = "⏸ Pause";
+        playPauseBtn.textContent = "⏸";
       } else {
         audioElement.pause();
-        playPauseBtn.textContent = "▶ Play";
+        playPauseBtn.textContent = "▶";
       }
     });
 
     // Mute toggle
     muteBtn.addEventListener("click", () => {
       audioElement.muted = !audioElement.muted;
-      muteBtn.textContent = audioElement.muted ? "🔊" : "Mute";
+      muteBtn.textContent = audioElement.muted ? "UnMute" : "Mute";
     });
 
     // Update seek bar as audio plays
@@ -233,7 +248,7 @@
 
     // Reset play button when audio ends
     audioElement.addEventListener("ended", () => {
-      playPauseBtn.textContent = "▶ Play";
+      playPauseBtn.textContent = "▶";
       subtitleBox.style.display = "none";
       seekBar.value = 0;
     });
@@ -276,7 +291,7 @@ startBtn.addEventListener("click", () => {
   // Play audio
   try {
     await audioElement.play();
-    playPauseBtn.textContent = "⏸ Pause";
+    playPauseBtn.textContent = "⏸";
   } catch (err) {
     console.error("Play failed:", err);
   }
@@ -288,7 +303,7 @@ document.getElementById("instructions").style.display = "flex";
   startBtn.style.display = "none";
       // Play all screens
   screens.forEach(video => {
-    video.muted = false; // unmute if needed
+    video.muted = true; // unmute if needed
     video.play().catch(e => console.warn("Video play prevented:", e));
   });
       //make 3d stuff clickable
@@ -754,7 +769,8 @@ loader2.load(
   plinthHeight: 1,
   plinthRadius: .8,
     objectOffsetHeight:0,
-    objectOffsetRotation: 0.5
+    objectOffsetRotation: 0.5,
+    text:"Placeholder"
 });
   
   //back right 33
@@ -766,7 +782,8 @@ loader2.load(
   plinthHeight: 1,
   plinthRadius: .8,
     objectOffsetHeight: 0,
-      objectOffsetRotation: Math.PI
+      objectOffsetRotation: Math.PI,
+        text:"Aroa"
 });
 
 
@@ -781,7 +798,8 @@ loader2.load(
   plinthHeight: 1,
   plinthRadius: .7,
     objectOffsetHeight: 0,
-       objectOffsetRotation: 0
+       objectOffsetRotation: 0,
+       text:"Fulin Guo"
 }); 
   
   //right 9
@@ -793,7 +811,8 @@ loader2.load(
   plinthHeight: 1,
   plinthRadius: .9,
     objectOffsetHeight: 0,
-       objectOffsetRotation: 0
+       objectOffsetRotation: 0,
+        text:"Chih yang"
 });
   
   // Place a 16:9 screen at (0,2,-5), rotated slightly
@@ -803,15 +822,23 @@ addScreen({
   width: 25,
   height: 10,
   position: [30, 16,-5],
-  rotation: [0, Math.PI*1.50, 0]
+  rotation: [0, Math.PI*1.50, 0],
+  clickable:true,
+  _cameraScalar:5,
+        text:"MA Costume Film",
+  fontSize:60
 });
   //ual ffaward
   addScreen({
   url: "https://video.wixstatic.com/video/a2e228_fe5167c3632a45ef901aeeadd24d1489/720p/mp4/file.mp4",
-  width: 25,
-  height: 10,
-  position: [45, 8,10],
-  rotation: [0, Math.PI*1.37, 0]
+  width: 23,
+  height: 12,
+  position: [45, 7,10],
+  rotation: [0, Math.PI*1.37, 0],
+  clickable:true,
+  _cameraScalar:5,
+    text:"UAL Future Fashion Film Festival",
+          fontSize:60
 });
   //beth fraiser
   addScreen({
@@ -819,7 +846,11 @@ addScreen({
   width: 25,
   height: 14,
   position: [-30, 24,0],
-  rotation: [0, Math.PI*0.50, 0]
+  rotation: [0, Math.PI*0.50, 0],
+  clickable:true,
+  _cameraScalar:4,
+        text:"Beth Fraser x Lendlease",
+  fontSize:60
 });
   //behind screen
  /* addScreen({
@@ -844,7 +875,11 @@ addScreen({
   width: 18,
   height: 10,
   position: [-5, 24,37],
-  rotation: [0, Math.PI*.95, 0]
+  rotation: [0, Math.PI*.95, 0],
+  clickable:true,
+  _cameraScalar:5,
+        text:"London Tech Week",
+  fontSize:60
 });
   
   //ma photos
@@ -952,6 +987,12 @@ scene.add(streakMesh);
         controls.enabled = true;
         controls.update();
         document.getElementById('exitBtn').style.display = 'none';
+        
+        screens.forEach(video => {
+    video.muted = true; // unmute if needed
+    video.play().catch(e => console.warn("Video play prevented:", e));
+  });
+        
       });
     }
 
@@ -963,35 +1004,66 @@ scene.add(streakMesh);
     }
 
     function onMouseClick(event) {
-      if(experienceStarted==false)return;
-      if (!controls.enabled) return;
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(podiums);
-      if (intersects.length > 0) {
-        savedCameraPosition = camera.position.clone();
-        savedCameraTarget = controls.target.clone();
-        const podium = intersects[0].object;
-        const podiumPos = podium.position.clone();
-        const frontDirection = new THREE.Vector3(0, 0, 1);
-        frontDirection.applyEuler(podium.rotation);
-        const cameraOffset = frontDirection.multiplyScalar(4);
-        targetPosition = podiumPos.clone().add(cameraOffset);
-        targetPosition.y = podiumPos.y + .5;
-        targetLookAt = podiumPos.clone();
-        targetLookAt.y += 0;
-        zooming = true;
-        controls.enabled = false;
-        document.getElementById('exitBtn').style.display = 'block';
-      }
+  if (!experienceStarted) return;
+  if (!controls.enabled) return;
+
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  const intersects = raycaster.intersectObjects(podiums);
+  if (intersects.length > 0) {
+    savedCameraPosition = camera.position.clone();
+    savedCameraTarget = controls.target.clone();
+
+    const podium = intersects[0].object;
+    const podiumPos = podium.position.clone();
+
+    // ✅ Get local bounding box of the geometry
+    podium.geometry.computeBoundingBox();
+    const bbox = podium.geometry.boundingBox;
+    const localSize = new THREE.Vector3();
+    bbox.getSize(localSize);
+
+    // Apply local scale
+    const localZ = localSize.z * podium.scale.z;
+
+    // Get podium's forward direction (local rotation only)
+    const frontDirection = new THREE.Vector3(0, 0, 1);
+    frontDirection.applyEuler(podium.rotation);
+let cameraOffset = 1;
+    // Offset camera using local Z
+    let cameraScalar = podium.userData.cameraScalar;
+    if(cameraScalar!=null){
+      cameraOffset = frontDirection.multiplyScalar(4 * cameraScalar);
     }
+      else{
+      cameraOffset = frontDirection.multiplyScalar(4);
+    }
+
+    targetPosition = podiumPos.clone().add(cameraOffset);
+    targetPosition.y = podiumPos.y + 0.5;
+
+    targetLookAt = podiumPos.clone();
+    zooming = true;
+    controls.enabled = false;
+
+    document.getElementById('exitBtn').style.display = 'block';
+    
+    if (podium.userData.video) {
+      podium.userData.video.muted = false;
+    }
+  }
+}
+
+
     
     
     function addScreen({ 
   url, 
   width = 4, 
-  height = 2.25, 
+  height = 2.25,
+      _cameraScalar =1,
   position = [0, 0, 0], 
   rotation = [0, 0, 0],
       offsetClick=0,
@@ -1003,9 +1075,9 @@ scene.add(streakMesh);
 
   // Detect video vs image
   const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-
+  let video = null;
   if (isVideo) {
-    const video = document.createElement('video');
+    video = document.createElement('video');
     
     video.src = url;
     video.crossOrigin = "anonymous";
@@ -1050,13 +1122,21 @@ scene.add(streakMesh);
     //let a = position-offsetClick;
     podium.position.set(position[0],position[1]-offsetClick,position[2]);
     podium.rotation.set(...rotation);
+    podium.userData.cameraScalar = _cameraScalar;
+    
+    // ✅ Store reference to video if it's a film
+    if (isVideo) {
+      podium.userData.video = video;
+    }
+    
     scene.add(podium);
     podiums.push(podium);
   }
       
-        const textMesh = makeTextPlane(text, { fontsize: fontSize, textColor: { r: 200, g: 255, b: 200 } });
-textMesh.position.set(position[0],position[1]-(height/2)-.3,position[2]);
+        const textMesh = makeTextPlane(text, { fontsize: fontSize, textColor: { r: 200, g: 255, b: 200 }, canvasWidth:100*width+20 });
+textMesh.position.set(position[0],position[1]-(height/2)-.6,position[2]);
   textMesh.rotation.set(...rotation);
+
 scene.add(textMesh);
 
   return screenMesh;
@@ -1074,7 +1154,10 @@ scene.add(textMesh);
   objectOffsetRotation = 0,
   clickable = true,
   light_ = true,
-  emissiveWhite = false   // <-- NEW OPTION
+  emissiveWhite = false,
+      text="",
+      fontSize=30,
+      canvasWidth=256
 }) {
   const group = new THREE.Group();
   group.position.copy(position);
@@ -1157,6 +1240,16 @@ scene.add(textMesh);
     pointLight1.castShadow = false;
     scene.add(pointLight1);
   }
+      
+      const textMesh = makeTextPlane(text, { fontsize: 24,    textColor: { r: 200, g: 255, b: 200 }, canvasWidth:plinthRadius*2*100, canvasHeight:fontSize*2});
+  textMesh.position.set(position.x,position.y+plinthHeight-.2,position.z);
+      
+      //textMesh.position.set(position[0],position[1],position[2]);
+  textMesh.rotation.y=rotation;
+      textMesh.translateX(0);
+      textMesh.translateZ(plinthRadius+.1);
+
+  scene.add(textMesh);
 
   return group;
 }
@@ -1165,21 +1258,25 @@ scene.add(textMesh);
   const fontface = parameters.fontface || "Arial";
   const fontsize = parameters.fontsize || 64;
   const textColor = parameters.textColor || { r: 255, g: 255, b: 255 };
+  const canvasWidth = parameters.canvasWidth || 512;  // default width
+  const canvasHeight = parameters.canvasHeight || 128; // default height
 
   // create canvas
   const canvas = document.createElement('canvas');
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
   const context = canvas.getContext('2d');
-  context.font = `${fontsize}px ${fontface}`;
 
-  // adjust canvas size to fit text
-  const textWidth = context.measureText(message).width;
-  canvas.width = textWidth + 20;
-  canvas.height = fontsize * 1.5;
-
-  // redraw with proper resolution
+  // set font and color
   context.font = `${fontsize}px ${fontface}`;
   context.fillStyle = `rgb(${textColor.r},${textColor.g},${textColor.b})`;
-  context.fillText(message, 10, fontsize);
+
+  // left-align text
+  context.textAlign = "left";
+  context.textBaseline = "top";
+
+  // draw text with small padding from the top-left corner
+  context.fillText(message, 10, 10);
 
   // canvas → texture
   const texture = new THREE.CanvasTexture(canvas);
@@ -1191,6 +1288,7 @@ scene.add(textMesh);
     transparent: true,
     side: THREE.DoubleSide
   });
+   
 
   // plane geometry matches canvas ratio
   const geometry = new THREE.PlaneGeometry(canvas.width / 100, canvas.height / 100);
@@ -1198,6 +1296,7 @@ scene.add(textMesh);
 
   return mesh;
 }
+
 
     
     // 4. Animate
