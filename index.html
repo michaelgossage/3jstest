@@ -8,16 +8,18 @@
     html, body { margin: 0; overflow: hidden; height: 100%; font-family: "Arial", Arial, sans-serif; }
     #exitBtn {
       position: absolute;
-
-      bottom: 25%;
-      right:10%;
-
+top:10px;
+      right:10px;
+      //bottom: 25%;
+      //right:10%;
+       //left: 50%;            /* push to middle */
+  //transform: translateX(-50%); /* pull back by half its width */
       z-index: 10;
       padding: 10px 15px;
-      background: rgba(0,0,0,0.7);
-      color: white;
+      background: rgba(255,255,255,0.9);
+      color: black;
       border: none;
-      font-size: 24px;
+      font-size: 32px;
       cursor: pointer;
       display: none;
       text-align: center;
@@ -145,6 +147,22 @@
     
 
   <script>
+    
+    function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+function isAndroid() {
+  return /Android/.test(navigator.userAgent);
+}
+
+function isMobile() {
+  return /Mobi|Android/i.test(navigator.userAgent);
+}
+    let mobile=false;
+    if(isIOS()||isAndroid()||isMobile())mobile=true;
+    console.log(mobile);
+      
     /* -------------------------------
        🎤 AUDIO + SUBTITLES SYSTEM
     ------------------------------- */
@@ -208,14 +226,17 @@
   { start: 106.839, end: 108.46, text: "change lives. Thank you." }
 ]
 ;
-
+    //track if audio is playing in a bool
+let playing=false;
     // Play/Pause toggle
     playPauseBtn.addEventListener("click", () => {
       if (audioElement.paused) {
         audioElement.play();
+        playing=true;
         playPauseBtn.textContent = "⏸";
       } else {
         audioElement.pause();
+                playing=false;
         playPauseBtn.textContent = "▶";
       }
     });
@@ -291,6 +312,7 @@ startBtn.addEventListener("click", () => {
   // Play audio
   try {
     await audioElement.play();
+            playing=true;
     playPauseBtn.textContent = "⏸";
   } catch (err) {
     console.error("Play failed:", err);
@@ -298,7 +320,7 @@ startBtn.addEventListener("click", () => {
 
   // Show audio controls
   document.getElementById("audioControls").style.display = "flex";
-document.getElementById("instructions").style.display = "flex";
+//document.getElementById("instructions").style.display = "flex";
   // Hide start button
   startBtn.style.display = "none";
       // Play all screens
@@ -547,6 +569,7 @@ function init() {
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.physicallyCorrectLights = true;
@@ -562,16 +585,16 @@ function init() {
   // render pass (base scene)
 const renderPass = new THREE.RenderPass(scene, camera);
 composer.addPass(renderPass);
-  
+  if(!mobile){
   // bloom pass
 const bloomPass = new THREE.UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    .2,  // strength
+    1,  // strength
     0.1,  // radius
     0.85  // threshold
 );
 composer.addPass(bloomPass);
-  
+  }
 
 
 
@@ -581,6 +604,7 @@ composer.addPass(bloomPass);
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.target.copy(originalTarget);
+  controls.enablePan = false;
   
   // ✅ Enable auto-rotate
   controls.autoRotate = true;         // turn on auto-rotation
@@ -703,7 +727,10 @@ loader.load(
           metalness: 0.3,                     // tweak as needed
           roughness: 0.7,
         });
+        //dont do the shader on mobile
+        //if(!mobile){
         child.material = materialLine;
+        //}
       }
     });
 
@@ -744,7 +771,6 @@ loader2.load(
 );
   
   //3d models
-  
   //logo
     addModelOnPlinth({
   url: 'https://static.wixstatic.com/3d/a2e228_b95a1d6fdedd4df9bee1701ab00fa470.glb',
@@ -831,6 +857,8 @@ loader2.load(
   
   
   
+  //FILMS
+  if(!mobile){
   // Place a 16:9 screen at (0,2,-5), rotated slightly
   //toms film
 addScreen({
@@ -897,6 +925,7 @@ addScreen({
         text:"London Tech Week",
   fontSize:60
 });
+  }
   
   //ma photos
     addScreen({
@@ -986,10 +1015,15 @@ scene.add(streakMesh);
 
 
 
-      window.addEventListener('click', onMouseClick);
+
       window.addEventListener('resize', onWindowResize);
 
       document.getElementById('exitBtn').addEventListener('click', () => {
+        console.log(playing);
+        if(playing){
+    audioElement.play(); 
+  }
+        //audioElement.play(); 
         zooming = false;
         targetPosition = null;
         targetLookAt = null;
@@ -1009,7 +1043,9 @@ scene.add(streakMesh);
     video.play().catch(e => console.warn("Video play prevented:", e));
   });
         
+        
       });
+  
     }
 
     function onWindowResize() {
@@ -1019,12 +1055,24 @@ scene.add(streakMesh);
       composer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    function onMouseClick(event) {
+   function onSelect(event) {
   if (!experienceStarted) return;
   if (!controls.enabled) return;
 
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  let clientX, clientY;
+  if (event.touches && event.touches.length > 0) {
+    // Touch
+    clientX = event.touches[0].clientX;
+    clientY = event.touches[0].clientY;
+    event.preventDefault(); // stop page scrolling
+  } else {
+    // Mouse
+    clientX = event.clientX;
+    clientY = event.clientY;
+  }
+
+  mouse.x = (clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
 
   const intersects = raycaster.intersectObjects(podiums);
@@ -1047,13 +1095,12 @@ scene.add(streakMesh);
     // Get podium's forward direction (local rotation only)
     const frontDirection = new THREE.Vector3(0, 0, 1);
     frontDirection.applyEuler(podium.rotation);
-let cameraOffset = 1;
-    // Offset camera using local Z
+
+    let cameraOffset = 1;
     let cameraScalar = podium.userData.cameraScalar;
-    if(cameraScalar!=null){
+    if (cameraScalar != null) {
       cameraOffset = frontDirection.multiplyScalar(4 * cameraScalar);
-    }
-      else{
+    } else {
       cameraOffset = frontDirection.multiplyScalar(4);
     }
 
@@ -1066,11 +1113,23 @@ let cameraOffset = 1;
 
     document.getElementById('exitBtn').style.display = 'block';
     
+    
+
     if (podium.userData.video) {
+      //pause audio if playing
+    console.log(playing);
+    if(playing){
+      audioElement.pause();
+    }
       podium.userData.video.muted = false;
+      
     }
   }
 }
+
+// 👇 Listen for both mouse and touch
+renderer.domElement.addEventListener('click', onSelect, false);
+renderer.domElement.addEventListener('touchstart', onSelect, { passive: false });
 
 
     
@@ -1320,8 +1379,12 @@ function animateStreaks(delta) {
   materialLine.uniforms.uTime.value += delta;
   materialLineOuter.uniforms.uTime.value += delta;
   
-  //Audio reactive stuff
+  
+}
+    function calcAudioReactive(delta){
+      //Audio reactive stuff
   // Get average frequency from analyser
+  
   analyser.getByteFrequencyData(dataArray);
 
   // Compute normalized audio value (0-1)
@@ -1331,7 +1394,8 @@ function animateStreaks(delta) {
   }
   const avg = sum / dataArray.length;
   uniformsA.uAudio.value = avg / 255; // normalized
-}
+  
+    }
 
 
     function animate() {
@@ -1345,7 +1409,12 @@ function animateStreaks(delta) {
         }
       }
       const delta = clock.getDelta();
+      //if(!mobile){
       animateStreaks(delta);
+      //}
+      if(!mobile){
+      calcAudioReactive(delta);
+      }
       controls.update();
       
       
