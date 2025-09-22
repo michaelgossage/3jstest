@@ -600,7 +600,7 @@ function init() {
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.physicallyCorrectLights = true;
@@ -671,9 +671,14 @@ composer.addPass(bloomPass);
 
   const pointLight1 = new THREE.PointLight(0xffffff, 100, 100);
   pointLight1.position.set(0, 50, -3);
-  pointLight1.shadow.mapSize.width = 4096;
-  pointLight1.shadow.mapSize.height = 4096;
+  pointLight1.shadow.mapSize.width = 512;
+  pointLight1.shadow.mapSize.height = 512;
+  if(!mobile){
   pointLight1.castShadow = true;
+  }
+  else{
+    pointLight1.castShadow = false;
+  }
   scene.add(pointLight1);
   
   const rectLight = new THREE.RectAreaLight( 0xffffff, 0,  10, 10 );
@@ -702,8 +707,9 @@ rectLight.lookAt( 0, 0, 0 );
   );
   outerSphere.material=materialLineOuter;
   outerSphere.position.y=1;
-  
-  scene.add(outerSphere);
+  if(!mobile){
+   scene.add(outerSphere);
+  }
 
   const roof = new THREE.Mesh(
     new THREE.CylinderGeometry(40, 40,1,64),
@@ -764,8 +770,9 @@ loader.load(
         //}
       }
     });
-
-    scene.add(model);
+    //if(!mobile){
+      scene.add(model);
+    //}
   }
 );
   
