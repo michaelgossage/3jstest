@@ -133,6 +133,10 @@ top:10px;
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+
+
+  
 
   
 <!-- Post-processing -->
@@ -400,6 +404,8 @@ let savedCameraTarget = null;
 const originalPosition = new THREE.Vector3(0, 2, 8);
 const originalTarget = new THREE.Vector3(0, 2, 0);
 const clock = new THREE.Clock();
+    
+    let loader;
     
 const emissiveMaterial = new THREE.ShaderMaterial({
   uniforms: {
@@ -712,7 +718,7 @@ rectLight.lookAt( 0, 0, 0 );
   }
 
   const roof = new THREE.Mesh(
-    new THREE.CylinderGeometry(40, 40,1,64),
+    new THREE.CylinderGeometry(40, 40,1,32),
     new THREE.MeshStandardMaterial({ color: 0xcccccc })
   );
   roof.rotation.x = 0;//-Math.PI / 2;
@@ -720,6 +726,7 @@ rectLight.lookAt( 0, 0, 0 );
   roof.material = emissiveMaterial;
   scene.add(roof);
   // Podiums
+  /*
   const colors = [0xff0000,0x00ff00,0x0000ff,0xffff00,0xff00ff,0x00ffff,0xff8800,0x8800ff];
   for (let i = 0; i < 0; i++) {
     const podium = new THREE.Mesh(
@@ -739,13 +746,20 @@ rectLight.lookAt( 0, 0, 0 );
     scene.add(podium);
     podiums.push(podium);
   }
+  */
+  
+  // Draco loader
+  const dracoLoader = new THREE.DRACOLoader();
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
 
-  // Load GLTF (keep original materials!)
-  const loader = new THREE.GLTFLoader();
+  // Load walkway animated
+  loader = new THREE.GLTFLoader();
+  loader.setDRACOLoader(dracoLoader);
 loader.load(
   //'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb'
   //'https://static.wixstatic.com/3d/a2e228_247044ddb9ca45c4aa950ba98b4e2993.glb'
-  'https://static.wixstatic.com/3d/a2e228_9ac5269f6d664fc4aa1c82e4a1e8a8fc.glb',
+  //'https://static.wixstatic.com/3d/a2e228_9ac5269f6d664fc4aa1c82e4a1e8a8fc.glb'
+  'https://static.wixstatic.com/3d/a2e228_c3b4e83312034fdba9afb4e38c7c1fdc.glb',
   function (gltf) {
     const model = gltf.scene;
     model.position.set(0, 0, -3);
@@ -777,11 +791,13 @@ loader.load(
 );
   
   // Load GLTF (keep original materials!)
-  const loader2 = new THREE.GLTFLoader();
-loader2.load(
+  //const loader2 = new THREE.GLTFLoader();
+loader.load(
   //'https://static.wixstatic.com/3d/a2e228_3826155be906420b942cb6cb95aeea92.glb'
   //'https://static.wixstatic.com/3d/a2e228_25896596c8f74a9fbadf063c00e6f466.glb'
-  'https://static.wixstatic.com/3d/a2e228_9ac5269f6d664fc4aa1c82e4a1e8a8fc.glb',
+  //'https://static.wixstatic.com/3d/a2e228_9ac5269f6d664fc4aa1c82e4a1e8a8fc.glb'
+  'https://static.wixstatic.com/3d/a2e228_c3b4e83312034fdba9afb4e38c7c1fdc.glb'
+  ,
   function (gltf) {
     const model = gltf.scene;
     model.position.set(0, 0, -3);
@@ -811,7 +827,7 @@ loader2.load(
   //3d models
   //logo
     addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_b95a1d6fdedd4df9bee1701ab00fa470.glb',
+  url: 'https://static.wixstatic.com/3d/a2e228_47ce7829b15f4f73bfa2912d1b7d9e2d.glb',
   position: new THREE.Vector3(0, 12, -20),
   rotation: Math.PI *2,
   scale: 1.5,
@@ -826,7 +842,7 @@ loader2.load(
   
   //front 8
   addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_2b57df5830ae4be7b45a9e5b0439b05e.glb',
+  url: 'https://static.wixstatic.com/3d/a2e228_cf80fde9fbae49f98d6b1299761e598a.glb',
   position: new THREE.Vector3(0, 0, -14),
   rotation: Math.PI *2,
   scale: .25,
@@ -839,7 +855,7 @@ loader2.load(
   
   //back right 33
     addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_76f2e3e3c91a4494b6404721a61a34d1.glb',
+  url: 'https://static.wixstatic.com/3d/a2e228_c0ebd9c766344ac0aa6343d6dd269b20.glb',
   position: new THREE.Vector3(10, 0, 10),
   rotation: Math.PI *1.25,
   scale: .22,
@@ -855,7 +871,7 @@ loader2.load(
   //left 3
   
      addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_1532b0181efd484b8d87d6cabfffc3f9.glb',
+  url: 'https://static.wixstatic.com/3d/a2e228_a70fddb64b334f0da8afd0bfc48636cb.glb',
   position: new THREE.Vector3(-11, 0, 4),
   rotation: Math.PI * 2.6,
   scale: .3,
@@ -868,7 +884,7 @@ loader2.load(
   
   //right 9
       addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_16f876eadfac4d149dd5fd1dc72480e1.glb',
+  url: 'https://static.wixstatic.com/3d/a2e228_ca7c8d3ae4a34644b43b08001d4c3061.glb',
   position: new THREE.Vector3(11, 0, -4),
   rotation: Math.PI*1.6,
   scale: .45,
@@ -879,9 +895,9 @@ loader2.load(
         text:"Chih yang"
 });
   
-    //right 15
+    //left bqck 15
       addModelOnPlinth({
-  url: 'https://static.wixstatic.com/3d/a2e228_bf001c28e2204aa28a2a0a6e114911a5.glb',
+  url: 'https://static.wixstatic.com/3d/a2e228_f4b8995703a441f59ba3cb83abd8e388.glb',
   position: new THREE.Vector3(-8, 0, 10),
   rotation: Math.PI*2.8,
   scale: .4,
@@ -978,7 +994,7 @@ addScreen({
 });
       addScreen({
   url: "https://static.wixstatic.com/media/a2e228_24efecce13e2479ba14108cab139ce1f~mv2.jpg",
-  width: 3,
+  width: 3.3,
   height: 4,
   position: [13, 3,-15.5],
   rotation: [0, Math.PI*1.75, 0],
@@ -1000,7 +1016,7 @@ addScreen({
   //ba photography
       addScreen({
   url: "https://static.wixstatic.com/media/a2e228_1002331e45c941c597edb9c7e7aada8c~mv2.jpg",
-  width: 3,
+  width: 3.3,
   height: 4,
   position: [-15, 3,-2],
   rotation: [0, Math.PI*.5, 0],
@@ -1014,7 +1030,7 @@ addScreen({
 
         addScreen({
   url: "https://static.wixstatic.com/media/a2e228_b4eb45cfdfd4487d9417a0f81826f07d~mv2.jpg",
-  width: 3,
+  width: 3.3,
   height: 4,
   position: [-14, 3,-6],
   rotation: [0, Math.PI*.35, 0],
@@ -1287,7 +1303,8 @@ scene.add(textMesh);
   group.add(plinth);
 
   // Load model
-  const loader = new THREE.GLTFLoader();
+  //const loader = new THREE.GLTFLoader();
+      //loader is now global
   loader.load(url, (gltf) => {
     const model = gltf.scene;
     model.scale.setScalar(scale);
