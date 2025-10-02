@@ -85,6 +85,22 @@ top:10px;
       z-index: 20;
       color:white;
     }
+    #blocker {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width:100%;
+      height:100vh;
+      //transform: translate(-50%, -50%);
+      padding: 20px 40px;
+      font-size: 24px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      border: none;
+      border-radius: 0px;
+      cursor: pointer;
+      z-index: 100;
+    }
     button {
       background: #444;
       color: white;
@@ -112,6 +128,7 @@ top:10px;
   </style>
 </head>
 <body>
+  <div id="blocker"></div>
   <button id="startBtn">▶ Click to Begin<p style="font-size:.6em;text-align: left;">Click and drag to reframe the camera.<br><br>Click on artworks to zoom in.</p>
     <p style="font-size:.6em;text-align: left;"><br>WARNING: This content contains flashing images or patterns that may trigger seizures in individuals with photosensitive epilepsy or other light-sensitive conditions. Viewer discretion is advised. </p></button>
   <button id="exitBtn">X</button>
@@ -126,6 +143,7 @@ top:10px;
   </div>
 
   <div id="instructions">Click and drag to reframe the camera. <br><br>Click on artworks to zoom in.</div>
+  
   <audio id="voiceover" preload="auto"></audio>
   
   
@@ -358,6 +376,7 @@ startBtn.addEventListener("click", () => {
 //document.getElementById("instructions").style.display = "flex";
   // Hide start button
   startBtn.style.display = "none";
+      document.getElementById("blocker").style.display="none";
       // Play all screens
   screens.forEach(video => {
     video.muted = true; // unmute if needed
@@ -570,8 +589,8 @@ const materialLineOuter = new THREE.ShaderMaterial({
       float y = vUv.x + sin(vUv.y * 5.0 + uTime) * uDistortion;
 
       // Grid lines by taking fractional part
-      float lineX = abs(sin(x * 0.31415 * 4.0));
-      float lineY = abs(sin(y * 314.15 * 8.0));
+      float lineX = abs(sin(x * 0.31415 * 1.0));
+      float lineY = abs(sin(y * 314.15 * 1.0));
 
       // Combine X streaks and faint Y lines
       float streaks = smoothstep(0.5, 1.0, lineX);
