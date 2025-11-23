@@ -33,13 +33,13 @@ top:10px;
       color: #fff;
       padding: 10px 20px;
       border-radius: 0px;
-      font-size: 18px;
+      
       text-align: center;
       max-width: 90%;
       width:70%;
       z-index: 15;
       display: none;
-      font-size:36px;
+      font-size:1.5em;
     }
     #audioControls {
       position: absolute;
@@ -70,7 +70,7 @@ top:10px;
       border: none;
       border-radius: 0px;
       cursor: pointer;
-      z-index: 100;
+      z-index: 101;
     }
     #instructions {
       display: none;
@@ -94,13 +94,26 @@ top:10px;
       //transform: translate(-50%, -50%);
       padding: 20px 40px;
       font-size: 24px;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.95);
       color: white;
       border: none;
       border-radius: 0px;
       cursor: pointer;
       z-index: 100;
     }
+    #toggleFxBtn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  padding: 10px 15px;
+  background: rgba(255,255,255,0.9);
+  color: black;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+      z-index:1001;
+}
     button {
       background: #444;
       color: white;
@@ -129,8 +142,11 @@ top:10px;
 </head>
 <body>
   <div id="blocker"></div>
+  <div>
   <button id="startBtn">▶ Click to Begin<p style="font-size:.6em;text-align: left;">Click and drag to reframe the camera.<br><br>Click on artworks to zoom in.</p>
     <p style="font-size:.6em;text-align: left;"><br>WARNING: This content contains flashing images or patterns that may trigger seizures in individuals with photosensitive epilepsy or other light-sensitive conditions. Viewer discretion is advised. </p></button>
+    <button id="toggleFxBtn">Effects: ON</button>
+  </div>
   <button id="exitBtn">X</button>
   <div id="subtitleBox"></div>
 
@@ -169,6 +185,9 @@ top:10px;
     
 
   <script>
+    let effectsEnabled = true;
+    const toggleMeshes = [];
+    const toggleMeshes2 = [];
     
     function isIOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -734,6 +753,7 @@ rectLight.lookAt( 0, 0, 0 );
   outerSphere.position.y=1;
   if(!mobile){
    scene.add(outerSphere);
+    toggleMeshes.push(outerSphere);
   }
 
   const roof = new THREE.Mesh(
@@ -800,11 +820,13 @@ loader.load(
         //dont do the shader on mobile
         //if(!mobile){
         child.material = materialLine;
+        toggleMeshes2.push(child);
         //}
       }
     });
     //if(!mobile){
       scene.add(model);
+    
     //}
   }
 );
@@ -1445,6 +1467,22 @@ scene.add(textMesh);
 
   return mesh;
 }
+    
+    //toggle materials logic
+    const blackMat = new THREE.MeshBasicMaterial({ color: 0x000000,transparent: true,
+  opacity: 0 });
+    document.getElementById("toggleFxBtn").addEventListener("click", () => {
+  effectsEnabled = !effectsEnabled;
+      toggleMeshes.forEach(mesh => {
+      mesh.material = effectsEnabled ? materialLineOuter : blackMat;
+        mesh.material.needsUpdate = true;
+      });
+      toggleMeshes2.forEach(mesh => {
+      mesh.material = effectsEnabled ? materialLine : blackMat;
+        mesh.material.needsUpdate = true;
+      });
+  document.getElementById("toggleFxBtn").textContent = effectsEnabled ? "Effects: ON" : "Effects: OFF";
+});
 
 
     
@@ -1483,10 +1521,10 @@ function animateStreaks(delta) {
         }
       }
       const delta = clock.getDelta();
-      //if(!mobile){
+      if(effectsEnabled){
       animateStreaks(delta);
-      //}
-      if(!mobile){
+      }
+      if(!mobile&&effectsEnabled){
       calcAudioReactive(delta);
       }
       controls.update();
